@@ -19,8 +19,9 @@ class MLBDatabase(BaseDatabase):
     def __init__(self):
         super().__init__("mlb")
         self.tables = {
-            'consensus': 'mlb_consensus',
-            'consensus_totals': 'mlb_consensus_totals'
+            'consensus': 'mlb_consensus_winners',
+            'consensus_totals': 'mlb_consensus_totals', 
+            'results': 'mlb_results'
         }
     
     def save_consensus(self, data: List[Dict[str, Any]], tipo: str = "winners") -> bool:
@@ -124,14 +125,14 @@ class MLBDatabase(BaseDatabase):
     
     def create_consensus_table(self):
         """
-        SQL para crear tabla de consensus Winners/Losers
+        SQL para crear tabla de consensus Winners/Losers - MLB
         NOTA: Ejecutar manualmente en Supabase si no existe
         """
         sql = """
-        CREATE TABLE IF NOT EXISTS mlb_consensus (
+        CREATE TABLE IF NOT EXISTS mlb_consensus_winners (
             id SERIAL PRIMARY KEY,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            deporte VARCHAR(10) NOT NULL,
+            deporte VARCHAR(10) NOT NULL DEFAULT 'MLB',
             equipo_1 VARCHAR(100) NOT NULL,
             equipo_2 VARCHAR(100) NOT NULL,
             equipo_1_sigla VARCHAR(10) NOT NULL,
@@ -158,21 +159,21 @@ class MLBDatabase(BaseDatabase):
         );
         
         -- Índices para optimización
-        CREATE INDEX IF NOT EXISTS idx_mlb_consensus_fecha ON mlb_consensus(fecha_scraping);
-        CREATE INDEX IF NOT EXISTS idx_mlb_consensus_equipos ON mlb_consensus(equipo_1_sigla, equipo_2_sigla);
+        CREATE INDEX IF NOT EXISTS idx_mlb_consensus_winners_fecha ON mlb_consensus_winners(fecha_scraping);
+        CREATE INDEX IF NOT EXISTS idx_mlb_consensus_winners_equipos ON mlb_consensus_winners(equipo_1_sigla, equipo_2_sigla);
         """
         return sql
     
     def create_consensus_totals_table(self):
         """
-        SQL para crear tabla de consensus Over/Under
+        SQL para crear tabla de consensus Over/Under - MLB
         NOTA: Ejecutar manualmente en Supabase si no existe
         """
         sql = """
         CREATE TABLE IF NOT EXISTS mlb_consensus_totals (
             id SERIAL PRIMARY KEY,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            deporte VARCHAR(10) NOT NULL,
+            deporte VARCHAR(10) NOT NULL DEFAULT 'MLB',
             equipo_1 VARCHAR(100) NOT NULL,
             equipo_2 VARCHAR(100) NOT NULL,
             equipo_1_sigla VARCHAR(10) NOT NULL,
@@ -197,21 +198,21 @@ class MLBDatabase(BaseDatabase):
         );
         
         -- Índices para optimización
-        CREATE INDEX IF NOT EXISTS idx_mlb_totals_fecha ON mlb_consensus_totals(fecha_scraping);
-        CREATE INDEX IF NOT EXISTS idx_mlb_totals_equipos ON mlb_consensus_totals(equipo_1_sigla, equipo_2_sigla);
+        CREATE INDEX IF NOT EXISTS idx_mlb_consensus_totals_fecha ON mlb_consensus_totals(fecha_scraping);
+        CREATE INDEX IF NOT EXISTS idx_mlb_consensus_totals_equipos ON mlb_consensus_totals(equipo_1_sigla, equipo_2_sigla);
         """
         return sql
     
     def create_results_table(self):
         """
-        SQL para crear tabla de resultados reales
+        SQL para crear tabla de resultados reales - MLB
         NOTA: Ejecutar manualmente en Supabase si no existe
         """
         sql = """
         CREATE TABLE IF NOT EXISTS mlb_results (
             id SERIAL PRIMARY KEY,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            deporte VARCHAR(10) NOT NULL,
+            deporte VARCHAR(10) NOT NULL DEFAULT 'MLB',
             fecha VARCHAR(20) NOT NULL,
             equipo_local VARCHAR(100) NOT NULL,
             equipo_visitante VARCHAR(100) NOT NULL,

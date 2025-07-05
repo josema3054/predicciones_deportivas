@@ -11,25 +11,23 @@ Obtener y guardar todos los datos históricos necesarios para el análisis poste
 - Datos de líderes/expertos
 - Fechas y equipos
 
-### 2. **Scraping de Resultados Reales** 🔴 (Por arreglar)
+### 2. **Scraping de Resultados Reales** ✅ (Implementado)
 - **Winner/Loser reales**: Qué equipo ganó
 - **Totales reales**: Puntaje final total
 - **Scores individuales**: Puntaje por equipo
 - **Fechas exactas**: Sincronización con consensus
 
-### 3. **Estructura de Base de Datos**
+### 3. **Estructura de Base de Datos** ✅ (Actualizada)
 ```
-databases/
-├── mlb/
-│   ├── consensus_mlb.db
-│   │   ├── winners_consensus     # Predicciones Winner/Loser
-│   │   └── totals_consensus      # Predicciones Over/Under
-│   ├── results_mlb.db
-│   │   ├── winners_results       # Resultados Winner/Loser
-│   │   ├── totals_results        # Resultados Over/Under
-│   │   └── scores_results        # Puntajes individuales
-│   └── teams_mlb.db
-│       └── teams_info            # Información de equipos
+Supabase - Tablas por Deportes:
+├── mlb_consensus_winners     # Pronósticos Winner/Loser MLB
+├── mlb_consensus_totals      # Pronósticos Over/Under MLB
+├── mlb_results               # Resultados reales MLB
+├── nba_consensus_winners     # Futuro - NBA
+├── nba_consensus_totals      # Futuro - NBA
+├── nba_results               # Futuro - NBA
+└── nfl_consensus_winners     # Futuro - NFL
+    └── ...
 ```
 
 ### 4. **Validación de Datos**
