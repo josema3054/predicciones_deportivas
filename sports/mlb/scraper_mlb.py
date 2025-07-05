@@ -54,8 +54,44 @@ class MLBScraper(BaseScraper):
     
     def scrape_results(self, fecha: str) -> List[Dict[str, Any]]:
         """Scraping de resultados reales MLB"""
-        logger.warning("⚠️ Scraping de resultados pendiente - estructura web cambió")
-        return []
+        logger.info(f"📊 Scrapeando resultados reales MLB para {fecha}")
+        
+        # URL de ESPN para resultados MLB
+        url = f"https://www.espn.com/mlb/scoreboard/_/date/{fecha.replace('-', '')}"
+        driver = self._setup_driver()
+        resultados = []
+        
+        try:
+            logger.info(f"📍 URL: {url}")
+            driver.get(url)
+            
+            # Esperar a que carguen los partidos
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".ScoreCell"))
+            )
+            
+            # Buscar todos los partidos
+            partidos = driver.find_elements(By.CSS_SELECTOR, ".Scoreboard")
+            logger.info(f"📊 Partidos encontrados: {len(partidos)}")
+            
+            for partido in partidos:
+                resultado = self._parse_resultado_partido(partido, fecha)
+                if resultado:
+                    resultados.append(resultado)
+            
+            # Guardar en base de datos
+            if resultados:
+                self.database.save_results(resultados)
+                self.save_to_csv(resultados, f"mlb_resultados_{fecha}.csv")
+            
+            logger.info(f"✅ MLB resultados: {len(resultados)} registros para {fecha}")
+            return resultados
+            
+        except Exception as e:
+            logger.error(f"❌ Error en scraping resultados: {e}")
+            return []
+        finally:
+            driver.quit()
     
     def validate_data(self, data: List[Dict[str, Any]]) -> bool:
         """Validación de datos MLB"""
@@ -359,6 +395,63 @@ class MLBScraper(BaseScraper):
             print(f"✅ Nuevo registro guardado: {partido['equipo_1']} vs {partido['equipo_2']}")
         except Exception as e:
             print(f"⚠️ Error guardando: {e}")
+
+    def _parse_resultado_partido(self, elemento_partido, fecha: str) -> Dict[str, Any]:
+        """Parsear resultado de un partido individual"""
+        try:
+            # Extraer nombres de equipos
+            equipos = elemento_partido.find_elements(By.CSS_SELECTOR, ".ScoreCell__TeamName")
+            if len(equipos) < 2:
+                return None
+                
+            equipo_visitante = equipos[0].text.strip()
+            equipo_local = equipos[1].text.strip()
+            
+            # Extraer puntajes
+            puntajes = elemento_partido.find_elements(By.CSS_SELECTOR, ".ScoreCell__Score")
+            if len(puntajes) < 2:
+                return None
+                
+            score_visitante = int(puntajes[0].text.strip())
+            score_local = int(puntajes[1].text.strip())
+            
+            # Determinar ganador
+            if score_local > score_visitante:
+                ganador = equipo_local
+                perdedor = equipo_visitante
+            else:
+                ganador = equipo_visitante
+                perdedor = equipo_local
+            
+            # Calcular total
+            total_puntos = score_local + score_visitante
+            
+            # Normalizar nombres de equipos a siglas
+            equipo_local_sigla = self.teams.get_team_abbreviation(equipo_local)
+            equipo_visitante_sigla = self.teams.get_team_abbreviation(equipo_visitante)
+            
+            # Obtener nombres completos
+            equipo_local_nombre = self.teams.get_team_name(equipo_local_sigla)
+            equipo_visitante_nombre = self.teams.get_team_name(equipo_visitante_sigla)
+            
+            return {
+                'deporte': 'MLB',
+                'fecha': fecha,
+                'equipo_local': equipo_local_nombre,
+                'equipo_visitante': equipo_visitante_nombre,
+                'equipo_local_sigla': equipo_local_sigla,
+                'equipo_visitante_sigla': equipo_visitante_sigla,
+                'score_local': score_local,
+                'score_visitante': score_visitante,
+                'ganador': ganador,
+                'perdedor': perdedor,
+                'total_puntos': total_puntos,
+                'fecha_scraping': fecha
+            }
+            
+        except Exception as e:
+            logger.error(f"⚠️ Error parseando partido: {e}")
+            return None
 
 def main():
     """Función principal para testing"""

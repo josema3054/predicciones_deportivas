@@ -89,6 +89,58 @@ class MLBTeams(BaseTeams):
             return False
         
         return sigla.upper().strip() in MLB_TEAMS
+    
+    def get_team_abbreviation(self, nombre_equipo: str) -> str:
+        """Obtener abreviación del equipo desde nombre (usado en scraping de resultados)"""
+        if not nombre_equipo:
+            return nombre_equipo
+        
+        nombre_lower = nombre_equipo.lower().strip()
+        
+        # Buscar por nombre completo
+        for sigla, nombre in MLB_TEAMS.items():
+            if nombre.lower() == nombre_lower:
+                return sigla
+        
+        # Buscar por nombres parciales comunes
+        nombre_mappings = {
+            'yankees': 'NYY',
+            'red sox': 'BOS',
+            'blue jays': 'TOR',
+            'rays': 'TB',
+            'orioles': 'BAL',
+            'guardians': 'CLE',
+            'white sox': 'CHW',
+            'twins': 'MIN',
+            'royals': 'KC',
+            'tigers': 'DET',
+            'astros': 'HOU',
+            'angels': 'LAA',
+            'mariners': 'SEA',
+            'rangers': 'TEX',
+            'athletics': 'OAK',
+            'braves': 'ATL',
+            'mets': 'NYM',
+            'phillies': 'PHI',
+            'nationals': 'WAS',
+            'marlins': 'MIA',
+            'brewers': 'MIL',
+            'cubs': 'CHC',
+            'cardinals': 'STL',
+            'reds': 'CIN',
+            'pirates': 'PIT',
+            'dodgers': 'LAD',
+            'padres': 'SD',
+            'giants': 'SF',
+            'rockies': 'COL',
+            'diamondbacks': 'AZ'
+        }
+        
+        for nombre_parcial, sigla in nombre_mappings.items():
+            if nombre_parcial in nombre_lower:
+                return sigla
+        
+        return nombre_equipo
 
 # Funciones auxiliares para mantener compatibilidad
 def convert_team_name(sigla):

@@ -55,9 +55,54 @@ class MLBDatabase(BaseDatabase):
     
     def save_results(self, data: List[Dict[str, Any]]) -> bool:
         """Guardar resultados reales"""
-        # Esta función será implementada cuando se arregle el scraping de resultados
-        logger.warning("⚠️ save_results aún no implementado - pendiente fix del scraping")
-        return False
+        if not data:
+            logger.warning("No hay datos de resultados para guardar")
+            return False
+        
+        # Agregar tabla de resultados
+        if 'results' not in self.tables:
+            self.tables['results'] = 'mlb_results'
+        
+        saved_count = 0
+        
+        try:
+            for resultado in data:
+                # Verificar duplicados
+                if not self.check_result_duplicates(resultado):
+                    # Normalizar deporte a mayúsculas
+                    resultado_normalized = resultado.copy()
+                    resultado_normalized['deporte'] = resultado_normalized.get('deporte', 'MLB').upper()
+                    
+                    self.supabase.table(self.tables['results']).insert(resultado_normalized).execute()
+                    saved_count += 1
+                    logger.info(f"✅ Resultado guardado: {resultado.get('equipo_local')} vs {resultado.get('equipo_visitante')}")
+                else:
+                    logger.info(f"🔄 Resultado duplicado omitido: {resultado.get('equipo_local')} vs {resultado.get('equipo_visitante')}")
+            
+            logger.info(f"💾 {saved_count} resultados guardados en {self.tables['results']}")
+            return saved_count > 0
+            
+        except Exception as e:
+            logger.error(f"❌ Error al guardar resultados: {e}")
+            return False
+    
+    def check_result_duplicates(self, data: Dict[str, Any]) -> bool:
+        """Verificar si ya existe un resultado con los mismos datos"""
+        try:
+            deporte_upper = data.get('deporte', 'MLB').upper()
+            equipo_local_sigla = data.get('equipo_local_sigla')
+            equipo_visitante_sigla = data.get('equipo_visitante_sigla')
+            fecha = data.get('fecha')
+            
+            if not all([equipo_local_sigla, equipo_visitante_sigla, fecha]):
+                return False
+            
+            existing = self.supabase.table(self.tables['results']).select("id").eq("deporte", deporte_upper).eq("equipo_local_sigla", equipo_local_sigla).eq("equipo_visitante_sigla", equipo_visitante_sigla).eq("fecha", fecha).execute()
+            
+            return len(existing.data) > 0
+        except Exception as e:
+            logger.error(f"❌ Error al verificar duplicados de resultados: {e}")
+            return False
     
     def check_duplicates(self, data: Dict[str, Any], tabla: str) -> bool:
         """Verificar si ya existe un registro con los mismos datos"""
@@ -154,6 +199,35 @@ class MLBDatabase(BaseDatabase):
         -- Índices para optimización
         CREATE INDEX IF NOT EXISTS idx_mlb_totals_fecha ON mlb_consensus_totals(fecha_scraping);
         CREATE INDEX IF NOT EXISTS idx_mlb_totals_equipos ON mlb_consensus_totals(equipo_1_sigla, equipo_2_sigla);
+        """
+        return sql
+    
+    def create_results_table(self):
+        """
+        SQL para crear tabla de resultados reales
+        NOTA: Ejecutar manualmente en Supabase si no existe
+        """
+        sql = """
+        CREATE TABLE IF NOT EXISTS mlb_results (
+            id SERIAL PRIMARY KEY,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            deporte VARCHAR(10) NOT NULL,
+            fecha VARCHAR(20) NOT NULL,
+            equipo_local VARCHAR(100) NOT NULL,
+            equipo_visitante VARCHAR(100) NOT NULL,
+            equipo_local_sigla VARCHAR(10) NOT NULL,
+            equipo_visitante_sigla VARCHAR(10) NOT NULL,
+            score_local INTEGER NOT NULL,
+            score_visitante INTEGER NOT NULL,
+            ganador VARCHAR(100) NOT NULL,
+            perdedor VARCHAR(100) NOT NULL,
+            total_puntos INTEGER NOT NULL,
+            fecha_scraping VARCHAR(20) NOT NULL
+        );
+        
+        -- Índices para optimización
+        CREATE INDEX IF NOT EXISTS idx_mlb_results_fecha ON mlb_results(fecha);
+        CREATE INDEX IF NOT EXISTS idx_mlb_results_equipos ON mlb_results(equipo_local_sigla, equipo_visitante_sigla);
         """
         return sql
     
@@ -255,6 +329,8 @@ def main():
     print(db.create_consensus_table())
     print("\n=== CONSENSUS TOTALS ===")
     print(db.create_consensus_totals_table())
+    print("\n=== RESULTADOS ===")
+    print(db.create_results_table())
     
     # Test de conexión
     try:
