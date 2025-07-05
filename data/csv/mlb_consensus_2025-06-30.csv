@@ -1,0 +1,11 @@
+deporte,equipo_1,equipo_2,equipo_1_sigla,equipo_2_sigla,fecha_hora,consensus_equipo_1,consensus_equipo_2,side_equipo_1,side_equipo_2,picks_equipo_1,picks_equipo_2,fecha_scraping
+MLB,Cleveland Guardians,Chicago Cubs,CLE,CHC,2025-07-01,8%,92%,+150,-179,1,11,2025-06-30
+MLB,Houston Astros,Colorado Rockies,HOU,COL,2025-07-01,90%,10%,-168,+158,9,1,2025-06-30
+MLB,Cincinnati Reds,Boston Red Sox,CIN,BOS,2025-07-01,89%,11%,-105,-108,8,1,2025-06-30
+MLB,Chicago White Sox,Los Angeles Dodgers,CHW,LAD,2025-07-01,13%,88%,+242,-400,1,7,2025-06-30
+MLB,Minnesota Twins,Miami Marlins,MIN,MIA,2025-07-01,14%,86%,-143,+123,1,6,2025-06-30
+MLB,Los Angeles Angels,Atlanta Braves,LAA,ATL,2025-07-01,86%,14%,+144,-150,6,1,2025-06-30
+MLB,San Diego Padres,Philadelphia Phillies,SD,PHI,2025-07-01,29%,71%,+145,-175,2,5,2025-06-30
+MLB,Baltimore Orioles,Texas Rangers,BAL,TEX,2025-07-01,33%,67%,+152,-205,3,6,2025-06-30
+MLB,Kansas City Royals,Seattle Mariners,KC,SEA,2025-07-01,33%,67%,+121,-135,3,6,2025-06-30
+MLB,Detroit Tigers,Washington Nationals,DET,WAS,2025-07-01,67%,33%,-154,+130,8,4,2025-06-30

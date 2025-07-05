@@ -1,0 +1,92 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/*.log
+
+# Temporary files
+*.tmp
+*.temp
+data/temp/*.html
+
+# Data backups
+backups/
+*.bak
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Selenium
+selenium-debug.log
+ghostdriver.log
+
+# ChromeDriver
+chromedriver.exe
+geckodriver.exe
+
+# Streamlit
+.streamlit/
+
+# Data files (optional - remove if you want to track CSVs)
+# *.csv
+# data/csv/*.csv
+
+# Sensitive data
+*.key
+*.pem
+secrets.json

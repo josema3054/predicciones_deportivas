@@ -1,0 +1,11 @@
+deporte,equipo_1,equipo_2,equipo_1_sigla,equipo_2_sigla,fecha_hora,consensus_over,consensus_under,side_over,side_under,picks_over,picks_under,linea_total,fecha_scraping
+mlb,St. Louis Cardinals,Cleveland Guardians,STL,CLE,2025-06-27,21%,79%,Over,Under,6,23,8.5,2025-06-27
+mlb,New York Mets,Pittsburgh Pirates,NYM,PIT,2025-06-27,24%,76%,Over,Under,6,19,8.5,2025-06-27
+mlb,Tampa Bay Rays,Baltimore Orioles,TB,BAL,2025-06-27,31%,69%,Over,Under,8,18,8.5,2025-06-27
+mlb,Colorado Rockies,Milwaukee Brewers,COL,MIL,2025-06-27,32%,68%,Over,Under,6,13,8.5,2025-06-27
+mlb,San Francisco Giants,Chicago White Sox,SF,CHW,2025-06-27,33%,67%,Over,Under,9,18,9,2025-06-27
+mlb,Chicago Cubs,Houston Astros,CHC,HOU,2025-06-27,35%,65%,Over,Under,9,17,8,2025-06-27
+mlb,Seattle Mariners,Texas Rangers,SEA,TEX,2025-06-27,64%,36%,Over,Under,14,8,6.5,2025-06-27
+mlb,Toronto Blue Jays,Boston Red Sox,TOR,BOS,2025-06-27,36%,64%,Over,Under,8,14,8.5,2025-06-27
+mlb,San Diego Padres,Cincinnati Reds,SD,CIN,2025-06-27,41%,59%,Over,Under,11,16,9,2025-06-27
+mlb,Philadelphia Phillies,Atlanta Braves,PHI,ATL,2025-06-27,41%,59%,Over,Under,7,10,9.5,2025-06-27

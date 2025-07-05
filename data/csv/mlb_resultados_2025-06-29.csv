@@ -1,0 +1,16 @@
+deporte,fecha_partido,sigla_equipo_1,sigla_equipo_2,nombre_equipo_1,nombre_equipo_2,puntaje_equipo_1,puntaje_equipo_2,resultado_sigla,resultado_nombre,total_puntos,linea_total,over_under,margen_ou,odds_ganador,estado_partido,fecha_scraping
+mlb,2025-06-29,STL,CLE,St. Louis Cardinals,Cleveland Guardians,0,7,CLE,Cleveland Guardians,7,,,,,final,2025-06-30
+mlb,2025-06-29,TOR,BOS,Toronto Blue Jays,Boston Red Sox,3,5,BOS,Boston Red Sox,8,,,,,final,2025-06-30
+mlb,2025-06-29,ATH,NYY,Oakland Athletics,New York Yankees,12,5,ATH,Oakland Athletics,17,,,,,final,2025-06-30
+mlb,2025-06-29,NYM,PIT,New York Mets,Pittsburgh Pirates,1,12,PIT,Pittsburgh Pirates,13,,,,,final,2025-06-30
+mlb,2025-06-29,PHI,ATL,Philadelphia Phillies,Atlanta Braves,1,2,ATL,Atlanta Braves,3,,,,,final,2025-06-30
+mlb,2025-06-29,TB,BAL,Tampa Bay Rays,Baltimore Orioles,5,1,TB,Tampa Bay Rays,6,,,,,final,2025-06-30
+mlb,2025-06-29,SD,CIN,San Diego Padres,Cincinnati Reds,3,2,SD,San Diego Padres,5,,,,,final,2025-06-30
+mlb,2025-06-29,SF,CHW,San Francisco Giants,Chicago White Sox,5,2,SF,San Francisco Giants,7,,,,,final,2025-06-30
+mlb,2025-06-29,CHC,HOU,Chicago Cubs,Houston Astros,2,0,CHC,Chicago Cubs,2,,,,,final,2025-06-30
+mlb,2025-06-29,LAD,KC,Los Angeles Dodgers,Kansas City Royals,1,5,KC,Kansas City Royals,6,,,,,final,2025-06-30
+mlb,2025-06-29,COL,MIL,Colorado Rockies,Milwaukee Brewers,3,4,MIL,Milwaukee Brewers,7,,,,,final,2025-06-30
+mlb,2025-06-29,SEA,TEX,Seattle Mariners,Texas Rangers,6,4,SEA,Seattle Mariners,10,,,,,final,2025-06-30
+mlb,2025-06-29,WAS,LAA,Washington Nationals,Los Angeles Angels,4,7,LAA,Los Angeles Angels,11,,,,,final,2025-06-30
+mlb,2025-06-29,MIA,AZ,Miami Marlins,Arizona Diamondbacks,6,4,MIA,Miami Marlins,10,,,,,final,2025-06-30
+mlb,2025-06-29,MIN,DET,Minnesota Twins,Detroit Tigers,3,0,MIN,Minnesota Twins,3,,,,,final,2025-06-30

@@ -1,0 +1,11 @@
+deporte,equipo_1,equipo_2,equipo_1_sigla,equipo_2_sigla,fecha_hora,consensus_equipo_1,consensus_equipo_2,side_equipo_1,side_equipo_2,picks_equipo_1,picks_equipo_2,fecha_scraping
+MLB,Colorado Rockies,Milwaukee Brewers,COL,MIL,2025-06-27,14%,86%,+3500,-6000,4,24,2025-06-27
+MLB,Minnesota Twins,Detroit Tigers,MIN,DET,2025-06-27,17%,83%,-5000,+1300,4,19,2025-06-27
+MLB,St. Louis Cardinals,Cleveland Guardians,STL,CLE,2025-06-27,69%,31%,-5500,+1600,20,9,2025-06-27
+MLB,Seattle Mariners,Texas Rangers,SEA,TEX,2025-06-27,31%,69%,-1700,+540,9,20,2025-06-27
+MLB,San Francisco Giants,Chicago White Sox,SF,CHW,2025-06-27,69%,31%,-5000,+2500,20,9,2025-06-27
+MLB,Oakland Athletics,New York Yankees,ATH,NYY,2025-06-27,33%,67%,+3500,-7500,10,20,2025-06-27
+MLB,New York Mets,Pittsburgh Pirates,NYM,PIT,2025-06-27,66%,34%,+3500,-7500,21,11,2025-06-27
+MLB,Los Angeles Dodgers,Kansas City Royals,LAD,KC,2025-06-27,61%,39%,-340,+225,19,12,2025-06-27
+MLB,Tampa Bay Rays,Baltimore Orioles,TB,BAL,2025-06-27,59%,41%,+3000,-4000,17,12,2025-06-27
+MLB,San Diego Padres,Cincinnati Reds,SD,CIN,2025-06-27,57%,43%,+3500,-10000,17,13,2025-06-27
