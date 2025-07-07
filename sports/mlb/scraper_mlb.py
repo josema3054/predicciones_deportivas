@@ -70,14 +70,33 @@ class MLBScraper(BaseScraper):
                 EC.presence_of_element_located((By.CSS_SELECTOR, ".ScoreCell"))
             )
             
-            # Buscar todos los partidos
-            partidos = driver.find_elements(By.CSS_SELECTOR, ".Scoreboard")
-            logger.info(f"📊 Partidos encontrados: {len(partidos)}")
+            # Buscar todos los partidos usando el selector correcto
+            partidos = driver.find_elements(By.CSS_SELECTOR, ".ScoreCell")
+            logger.info(f"📊 Elementos ScoreCell encontrados: {len(partidos)}")
             
+            # Filtrar solo los partidos finalizados
+            partidos_finalizados = []
             for partido in partidos:
-                resultado = self._parse_resultado_partido(partido, fecha)
-                if resultado:
-                    resultados.append(resultado)
+                try:
+                    # Verificar si el partido está finalizado
+                    final_text = partido.text.lower()
+                    if "final" in final_text or "f" in final_text:
+                        partidos_finalizados.append(partido)
+                except:
+                    continue
+            
+            logger.info(f"📊 Partidos finalizados encontrados: {len(partidos_finalizados)}")
+            
+            # Parsear cada partido finalizado
+            for i, partido in enumerate(partidos_finalizados):
+                try:
+                    resultado = self._parse_resultado_partido(partido, fecha)
+                    if resultado:
+                        resultados.append(resultado)
+                        logger.info(f"📊 Partido {i+1}: {resultado['equipo_visitante_sigla']} @ {resultado['equipo_local_sigla']} ({resultado['score_visitante']}-{resultado['score_local']})")
+                except Exception as e:
+                    logger.error(f"❌ Error procesando partido {i+1}: {e}")
+                    continue
             
             # Guardar en base de datos
             if resultados:
@@ -324,96 +343,37 @@ class MLBScraper(BaseScraper):
         except Exception as e:
             logger.error(f"⚠️ Error parseando fila totals: {e}")
             return None
-            equipos_lines = equipos_col.split('\n')
-            if len(equipos_lines) < 3:
-                return None
-                
-            equipo_1_sigla = equipos_lines[1].strip()
-            equipo_2_sigla = equipos_lines[2].strip()
-            
-            # Convertir a nombres completos
-            equipo_1 = self.normalize_team_name(equipo_1_sigla)
-            equipo_2 = self.normalize_team_name(equipo_2_sigla)
-            
-            if not equipo_1 or not equipo_2:
-                return None
-            
-            # Parsear consensus
-            consensus_1, consensus_2 = parse_consensus_percentages(consensus_col)
-            if not consensus_1 or not consensus_2:
-                return None
-            
-            # Parsear picks
-            picks_1, picks_2 = parse_picks_count(picks_col)
-            if picks_1 is None or picks_2 is None:
-                return None
-            
-            # Parsear odds
-            odds_lines = odds_col.split('\n')
-            side_1 = odds_lines[0].strip() if len(odds_lines) > 0 else ''
-            side_2 = odds_lines[1].strip() if len(odds_lines) > 1 else ''
-            
-            # Parsear fecha
-            fecha_hora = parse_date_from_text(fecha_col, date_str)
-            
-            return {
-                'deporte': 'MLB',
-                'equipo_1': equipo_1,
-                'equipo_2': equipo_2,
-                'equipo_1_sigla': equipo_1_sigla,
-                'equipo_2_sigla': equipo_2_sigla,
-                'fecha_hora': fecha_hora,
-                'consensus_equipo_1': consensus_1,
-                'consensus_equipo_2': consensus_2,
-                'side_equipo_1': side_1,
-                'side_equipo_2': side_2,
-                'picks_equipo_1': str(picks_1),
-                'picks_equipo_2': str(picks_2),
-                'fecha_scraping': date_str
-            }
-            
-        except Exception as e:
-            print(f"⚠️ Error parseando fila: {e}")
-            return None
     
-    def _is_duplicate_consensus(self, partido):
-        """Verificar si el registro ya existe"""
-        filters = {
-            'deporte': partido['deporte'],
-            'equipo_1_sigla': partido['equipo_1_sigla'],
-            'equipo_2_sigla': partido['equipo_2_sigla'],
-            'fecha_scraping': partido['fecha_scraping']
-        }
-        
-        return self.check_duplicates(self.config['tables']['consensus'], filters)
-    
-    def _save_consensus_party(self, partido):
-        """Guardar partido en base de datos"""
-        try:
-            client = self.db_manager.get_client()
-            client.table(self.config['tables']['consensus']).insert(partido).execute()
-            print(f"✅ Nuevo registro guardado: {partido['equipo_1']} vs {partido['equipo_2']}")
-        except Exception as e:
-            print(f"⚠️ Error guardando: {e}")
-
     def _parse_resultado_partido(self, elemento_partido, fecha: str) -> Dict[str, Any]:
-        """Parsear resultado de un partido individual"""
+        """Parsear resultado de un partido individual desde ESPN"""
         try:
-            # Extraer nombres de equipos
+            # Extraer nombres de equipos usando el contenedor específico del partido
             equipos = elemento_partido.find_elements(By.CSS_SELECTOR, ".ScoreCell__TeamName")
             if len(equipos) < 2:
+                logger.warning(f"⚠️ No se encontraron suficientes equipos: {len(equipos)}")
                 return None
-                
+            
+            # Los equipos están en orden: visitante, local
             equipo_visitante = equipos[0].text.strip()
             equipo_local = equipos[1].text.strip()
             
             # Extraer puntajes
             puntajes = elemento_partido.find_elements(By.CSS_SELECTOR, ".ScoreCell__Score")
             if len(puntajes) < 2:
+                logger.warning(f"⚠️ No se encontraron suficientes puntajes: {len(puntajes)}")
                 return None
-                
-            score_visitante = int(puntajes[0].text.strip())
-            score_local = int(puntajes[1].text.strip())
+            
+            # Los puntajes están en orden: visitante, local
+            score_visitante_text = puntajes[0].text.strip()
+            score_local_text = puntajes[1].text.strip()
+            
+            # Validar que son números
+            if not score_visitante_text.isdigit() or not score_local_text.isdigit():
+                logger.warning(f"⚠️ Puntajes no válidos: {score_visitante_text}, {score_local_text}")
+                return None
+            
+            score_visitante = int(score_visitante_text)
+            score_local = int(score_local_text)
             
             # Determinar ganador
             if score_local > score_visitante:
@@ -430,11 +390,16 @@ class MLBScraper(BaseScraper):
             equipo_local_sigla = self.teams.get_team_abbreviation(equipo_local)
             equipo_visitante_sigla = self.teams.get_team_abbreviation(equipo_visitante)
             
+            # Validar que se pudieron normalizar los equipos
+            if not equipo_local_sigla or not equipo_visitante_sigla:
+                logger.warning(f"⚠️ No se pudieron normalizar los equipos: {equipo_local} -> {equipo_local_sigla}, {equipo_visitante} -> {equipo_visitante_sigla}")
+                return None
+            
             # Obtener nombres completos
             equipo_local_nombre = self.teams.get_team_name(equipo_local_sigla)
             equipo_visitante_nombre = self.teams.get_team_name(equipo_visitante_sigla)
             
-            return {
+            resultado = {
                 'deporte': 'MLB',
                 'fecha': fecha,
                 'equipo_local': equipo_local_nombre,
@@ -448,6 +413,9 @@ class MLBScraper(BaseScraper):
                 'total_puntos': total_puntos,
                 'fecha_scraping': fecha
             }
+            
+            logger.info(f"✅ Resultado parseado: {equipo_visitante_sigla} ({score_visitante}) @ {equipo_local_sigla} ({score_local})")
+            return resultado
             
         except Exception as e:
             logger.error(f"⚠️ Error parseando partido: {e}")

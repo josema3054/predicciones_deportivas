@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Resultados de Simulación</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .result-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .result-card h3 {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .result-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .positive { color: #28a745; }
+        .negative { color: #dc3545; }
+        .neutral { color: #6c757d; }
+        .chart-container {
+            margin: 20px 0;
+            text-align: center;
+            height: 300px;
+        }
+        .parameters {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .parameters h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .parameter-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .parameter-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .parameter-value {
+            color: #333;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #555;
+        }
+        .win { background-color: #d4edda; }
+        .loss { background-color: #f8d7da; }
+        .back-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        .back-btn:hover {
+            transform: translateY(-2px);
+        }
+        .alert {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border: 1px solid transparent;
+            border-radius: 8px;
+        }
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+    </style>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Volver al Simulador</a>
+        
+        <h1>📊 Resultados de Simulación</h1>
+        
+        <div class="results-grid">
+            <div class="result-card">
+                <h3>💰 Bankroll Final</h3>
+                <div class="result-value {{ 'positive' if bankroll_final > bankroll_inicial else 'negative' if bankroll_final < bankroll_inicial else 'neutral' }}">
+                    ${{ "%.2f"|format(bankroll_final) }}
+                </div>
+                <small>Inicial: ${{ "%.2f"|format(bankroll_inicial) }}</small>
+            </div>
+            
+            <div class="result-card">
+                <h3>📈 Beneficio Total</h3>
+                <div class="result-value {{ 'positive' if beneficio_total > 0 else 'negative' if beneficio_total < 0 else 'neutral' }}">
+                    ${{ "%.2f"|format(beneficio_total) }}
+                </div>
+                <small>{{ "%.1f"|format(porcentaje_cambio) }}% de cambio</small>
+            </div>
+            
+            <div class="result-card">
+                <h3>🎯 Efectividad</h3>
+                <div class="result-value {{ 'positive' if porcentaje_acierto > 50 else 'negative' }}">
+                    {{ "%.1f"|format(porcentaje_acierto) }}%
+                </div>
+                <small>{{ apuestas_ganadas }}/{{ total_apuestas }} aciertos</small>
+            </div>
+            
+            <div class="result-card">
+                <h3>🎲 Apuestas</h3>
+                <div class="result-value neutral">{{ total_apuestas }}</div>
+                <small>De {{ apuestas_disponibles }} disponibles</small>
+            </div>
+        </div>
+        
+        <div class="parameters">
+            <h3>⚙️ Parámetros Utilizados</h3>
+            <div class="parameter-item">
+                <span class="parameter-label">💵 Monto por Apuesta:</span>
+                <span class="parameter-value">${{ "%.2f"|format(parametros.monto_apuesta) }}</span>
+            </div>
+            <div class="parameter-item">
+                <span class="parameter-label">🎯 Consensus Mínimo:</span>
+                <span class="parameter-value">{{ parametros.consensus_minimo }}%</span>
+            </div>
+            <div class="parameter-item">
+                <span class="parameter-label">📈 Cuota Europea:</span>
+                <span class="parameter-value">{{ parametros.cuota }}</span>
+                <small style="display: block; color: #6c757d; margin-top: 2px;">
+                    (Si apuestas ${{ "%.0f"|format(parametros.monto_apuesta) }}, recibes ${{ "%.0f"|format(parametros.monto_apuesta * parametros.cuota) }} si ganas)
+                </small>
+            </div>
+            <div class="parameter-item">
+                <span class="parameter-label">🎲 Máximo de Apuestas:</span>
+                <span class="parameter-value">{{ parametros.max_apuestas }}</span>
+            </div>
+            <div class="parameter-item">
+                <span class="parameter-label">💰 ROI por Apuesta:</span>
+                <span class="parameter-value">{{ "%.1f"|format((parametros.cuota - 1) * 100) }}% (ganando)</span>
+            </div>
+        </div>
+        
+        {% if grafico_json %}
+        <div class="chart-container">
+            <div id="bankroll-chart"></div>
+        </div>
+        {% endif %}
+        
+        {% if apuestas_realizadas %}
+        <div class="table-container">
+            <h3>📋 Detalle de Apuestas</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>📅 Fecha</th>
+                        <th>🏟️ Partido</th>
+                        <th>🎯 Predicción</th>
+                        <th>📊 Consensus</th>
+                        <th>📈 Cuota</th>
+                        <th>💰 Beneficio</th>
+                        <th>💵 Bankroll</th>
+                        <th>✅/❌</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for apuesta in apuestas_realizadas %}
+                    <tr class="{{ 'win' if apuesta.gano else 'loss' }}">
+                        <td>{{ apuesta.numero }}</td>
+                        <td>{{ apuesta.fecha }}</td>
+                        <td>{{ apuesta.equipos }}</td>
+                        <td>{{ apuesta.prediccion }}</td>
+                        <td>{{ apuesta.porcentaje }}%</td>
+                        <td><strong>{{ apuesta.cuota }}</strong></td>
+                        <td class="{{ 'positive' if apuesta.beneficio > 0 else 'negative' }}">
+                            ${{ "%.2f"|format(apuesta.beneficio) }}
+                        </td>
+                        <td>${{ "%.2f"|format(apuesta.bankroll) }}</td>
+                        <td>{{ '✅' if apuesta.gano else '❌' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        
+        {% if error %}
+        <div class="alert alert-danger">
+            <h4>❌ Error en la simulación</h4>
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
+        
+        {% if mensaje %}
+        <div class="alert alert-warning">
+            <h4>⚠️ Sin apuestas disponibles</h4>
+            <p>{{ mensaje }}</p>
+            <p>Prueba reduciendo el porcentaje de consensus mínimo o cambiando el tipo de apuesta.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if grafico_json %}
+    <script>
+        var graphJSON = {{ grafico_json|safe }};
+        Plotly.newPlot('bankroll-chart', graphJSON.data, graphJSON.layout);
+    </script>
+    {% endif %}
+</body>
+</html>

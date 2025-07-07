@@ -232,19 +232,32 @@ class MLBDatabase(BaseDatabase):
         """
         return sql
     
+    def get_results_by_date(self, date_str):
+        """Obtener resultados reales por fecha"""
+        try:
+            response = self.supabase.table(self.tables['results']).select("*").eq('fecha', date_str).execute()
+            return response.data
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo resultados por fecha: {e}")
+            return []
+    
     def get_consensus_by_date(self, date_str):
         """Obtener consensus Winners/Losers por fecha"""
-        client = self.db_manager.get_client()
-        
-        response = client.table(self.tables['consensus']).select("*").eq('fecha_scraping', date_str).execute()
-        return response.data
+        try:
+            response = self.supabase.table(self.tables['consensus']).select("*").eq('fecha_scraping', date_str).execute()
+            return response.data
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo consensus por fecha: {e}")
+            return []
     
     def get_consensus_totals_by_date(self, date_str):
         """Obtener consensus Totals por fecha"""
-        client = self.db_manager.get_client()
-        
-        response = client.table(self.tables['consensus_totals']).select("*").eq('fecha_scraping', date_str).execute()
-        return response.data
+        try:
+            response = self.supabase.table(self.tables['consensus_totals']).select("*").eq('fecha_scraping', date_str).execute()
+            return response.data
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo consensus totals por fecha: {e}")
+            return []
     
     def update_consensus_with_results(self, consensus_id, puntaje_1, puntaje_2, ganador_real):
         """Actualizar registro de consensus con resultados"""
@@ -292,6 +305,28 @@ class MLBDatabase(BaseDatabase):
         delete_response = client.table(table_name).delete().neq('id', -999999).execute()
         
         return initial_count
+    
+    def verify_table_exists(self, table_name: str) -> bool:
+        """Verificar si una tabla existe"""
+        try:
+            # Intentar hacer una consulta simple
+            response = self.supabase.table(table_name).select("id").limit(1).execute()
+            return True
+        except Exception as e:
+            logger.error(f"❌ Tabla {table_name} no existe: {e}")
+            return False
+    
+    def get_table_structure(self, table_name: str) -> List[str]:
+        """Obtener estructura de una tabla"""
+        try:
+            # Obtener un registro para ver la estructura
+            response = self.supabase.table(table_name).select("*").limit(1).execute()
+            if response.data:
+                return list(response.data[0].keys())
+            return []
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo estructura de {table_name}: {e}")
+            return []
     
     def get_stats_summary(self, fecha: str) -> Dict[str, Any]:
         """Obtener resumen de estadísticas para una fecha"""

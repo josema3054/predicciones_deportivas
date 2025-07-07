@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Apuestas MLB</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        .emoji {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        .text-muted {
+            font-size: 0.85em;
+        }
+        h1 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header text-center bg-transparent border-0 pb-0">
+                <h1><span class="emoji">🎰</span>Simulador de Apuestas MLB</h1>
+                <p class="text-muted">Simula estrategias de apuestas basadas en consensus y resultados reales</p>
+            </div>
+            <div class="card-body">
+                <form action="/simular" method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="bankroll">💰 Bankroll Inicial ($):</label>
+                                <input type="number" class="form-control" id="bankroll" name="bankroll" min="100" max="100000" value="1000" required>
+                                <small class="text-muted">Dinero inicial disponible para apostar</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="monto_apuesta">💵 Monto por Apuesta ($):</label>
+                                <input type="number" class="form-control" id="monto_apuesta" name="monto_apuesta" min="1" max="1000" value="20" required>
+                                <small class="text-muted">Cantidad fija a apostar en cada juego</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="consensus_minimo">📊 Consensus Mínimo (%):</label>
+                                <input type="number" class="form-control" id="consensus_minimo" name="consensus_minimo" min="50" max="100" value="60" required>
+                                <small class="text-muted">Solo apostar cuando el consensus supere este %</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="max_apuestas">🎯 Máximo de Apuestas:</label>
+                                <input type="number" class="form-control" id="max_apuestas" name="max_apuestas" min="10" max="500" value="100" required>
+                                <small class="text-muted">Número máximo de apuestas a simular</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="tipo_apuesta">🏆 Tipo de Apuesta:</label>
+                                <select class="form-control" id="tipo_apuesta" name="tipo_apuesta" required>
+                                    <option value="totals">Totals (Over/Under)</option>
+                                    <option value="winners">Winners (Ganador)</option>
+                                </select>
+                                <small class="text-muted">Totals son más efectivos según datos históricos</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="cuota">💎 Cuota Europea (Decimal):</label>
+                                <input type="number" class="form-control" id="cuota" name="cuota" step="0.1" min="1.0" max="10.0" value="1.8" required>
+                                <small class="text-muted">Para totals: 1.8 es típico. Ejemplo: apuestas $100 con cuota 1.8 = recibes $180 si ganas.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>📝 Explicación de Cuota Europea:</strong><br>
+                        La cuota europea (decimal) indica cuánto recibes por cada dólar apostado si ganas.<br>
+                        • Cuota 1.8: Si apuestas $100, recibes $180 (tu apuesta + $80 de ganancia)<br>
+                        • Cuota 2.0: Si apuestas $100, recibes $200 (tu apuesta + $100 de ganancia)<br>
+                        • Para totals MLB, cuotas entre 1.8-1.9 son muy realistas
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span class="emoji">🚀</span>Iniciar Simulación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
