@@ -9,6 +9,11 @@
 - **`app_streamlit.py`** - Interfaz web para visualización
 - **`equipos_data.py`** - Datos de equipos y conversiones
 
+### 🖥️ **Scripts de PowerShell (Nuevos)**
+- **`setup_powershell.ps1`** - Configuración automática para Windows
+- **`comandos_powershell.ps1`** - Comandos integrados para PowerShell
+- **`INICIO_RAPIDO_POWERSHELL.md`** - Guía de inicio rápido
+
 ### 📄 **Documentación**
 - **`README.md`** - Documentación principal
 - **`GUIA_WINDOWS.md`** - Guía específica para Windows

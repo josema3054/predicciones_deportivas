@@ -59,16 +59,12 @@ def ejecutar_simulacion(bankroll_inicial, monto_apuesta, consensus_minimo, max_a
         
         # Obtener datos según tipo de apuesta
         if tipo_apuesta == 'totals':
-            # Obtener consensus totals
-            consensus_response = db.supabase.table('mlb_consensus_totals').select('*').gte('fecha_hora', '2025-06-01').lt('fecha_hora', '2025-07-01').execute()
+            # Obtener consensus totals con resultados ya vinculados
+            consensus_response = db.supabase.table('mlb_consensus_totals').select('*').gte('fecha_hora', '2025-06-01').lt('fecha_hora', '2025-08-01').execute()
             consensus_data = consensus_response.data
             
-            # Obtener resultados
-            results_response = db.supabase.table('mlb_results').select('*').gte('fecha', '2025-06-01').lt('fecha', '2025-07-01').execute()
-            results_data = results_response.data
-            
-            # Procesar apuestas de totals
-            apuestas_validas = procesar_apuestas_totals(consensus_data, results_data, consensus_minimo, cuota)
+            # Procesar apuestas de totals - usar datos ya vinculados
+            apuestas_validas = procesar_apuestas_totals_vinculados(consensus_data, consensus_minimo, cuota)
             
         else:  # winners
             # Obtener consensus winners
@@ -139,6 +135,112 @@ def ejecutar_simulacion(bankroll_inicial, monto_apuesta, consensus_minimo, max_a
             }
         }
 
+def procesar_apuestas_totals_vinculados(consensus_data, consensus_minimo, cuota):
+    """Procesar apuestas de totals usando datos ya vinculados"""
+    
+    apuestas_validas = []
+    
+    for consensus in consensus_data:
+        # Verificar que tenga resultados vinculados
+        if not consensus.get('total_real') or not consensus.get('resultado_total'):
+            continue
+        
+        # Obtener información del partido
+        fecha_hora = consensus.get('fecha_hora', '')
+        fecha = fecha_hora.split(' ')[0] if fecha_hora else ''
+        
+        equipo_1 = consensus.get('equipo_1', '')
+        equipo_2 = consensus.get('equipo_2', '')
+        sigla_1 = consensus.get('equipo_1_sigla', '')
+        sigla_2 = consensus.get('equipo_2_sigla', '')
+        
+        # Obtener consensus over/under
+        consensus_over = consensus.get('consensus_over', 0)
+        consensus_under = consensus.get('consensus_under', 0)
+        linea_total = consensus.get('linea_total', 0)
+        
+        # Obtener resultados reales
+        total_real = consensus.get('total_real', 0)
+        resultado_total = consensus.get('resultado_total', '')
+        
+        if not equipo_1 or not equipo_2:
+            continue
+        
+        # Procesar porcentajes - CORRECCIÓN: verificar contenido de los campos
+        try:
+            # Inicializar porcentajes
+            perc_over = 0
+            perc_under = 0
+            
+            # Parsear consensus_over
+            over_str = str(consensus_over)
+            over_match = re.search(r'(\d+)\s*%', over_str)
+            if over_match:
+                porcentaje = float(over_match.group(1))
+                # Verificar si el texto contiene "Over" o "Under"
+                if 'Over' in over_str:
+                    perc_over = porcentaje
+                elif 'Under' in over_str:
+                    perc_under = porcentaje
+            
+            # Parsear consensus_under
+            under_str = str(consensus_under)
+            under_match = re.search(r'(\d+)\s*%', under_str)
+            if under_match:
+                porcentaje = float(under_match.group(1))
+                # Verificar si el texto contiene "Over" o "Under"
+                if 'Over' in under_str:
+                    perc_over = porcentaje
+                elif 'Under' in under_str:
+                    perc_under = porcentaje
+            
+            # Verificar si cumple consenso mínimo
+            mejor_opcion = None
+            mejor_porcentaje = 0
+            
+            if perc_over >= consensus_minimo:
+                mejor_opcion = 'over'
+                mejor_porcentaje = perc_over
+            elif perc_under >= consensus_minimo:
+                mejor_opcion = 'under'
+                mejor_porcentaje = perc_under
+            
+            if mejor_opcion:
+                # Determinar si la apuesta fue ganadora
+                apuesta_ganadora = False
+                if mejor_opcion == 'over' and resultado_total == 'OVER':
+                    apuesta_ganadora = True
+                elif mejor_opcion == 'under' and resultado_total == 'UNDER':
+                    apuesta_ganadora = True
+                
+                # Crear apuesta válida
+                apuesta = {
+                    'fecha': fecha,
+                    'equipos': f"{equipo_1} vs {equipo_2}",
+                    'equipo_1': equipo_1,
+                    'equipo_2': equipo_2,
+                    'sigla_1': sigla_1,
+                    'sigla_2': sigla_2,
+                    'linea_total': linea_total,
+                    'total_real': total_real,
+                    'prediccion': mejor_opcion,
+                    'tipo_apuesta': mejor_opcion,
+                    'porcentaje': mejor_porcentaje,
+                    'consensus_porcentaje': mejor_porcentaje,
+                    'cuota': cuota,
+                    'ganadora': apuesta_ganadora,
+                    'gano': apuesta_ganadora,
+                    'resultado_real': resultado_total
+                }
+                
+                apuestas_validas.append(apuesta)
+                
+        except Exception as e:
+            print(f"Error procesando consensus {equipo_1} vs {equipo_2}: {str(e)}")
+            continue
+    
+    return apuestas_validas
+
 def procesar_apuestas_totals(consensus_data, results_data, consensus_minimo, cuota):
     """Procesar apuestas de totals con consenso mínimo"""
     
@@ -175,30 +277,48 @@ def procesar_apuestas_totals(consensus_data, results_data, consensus_minimo, cuo
         if not sigla_1 or not sigla_2:
             continue
         
-        # Procesar porcentajes
+        # Procesar porcentajes - CORRECCIÓN: verificar contenido de los campos
         try:
-            over_str = str(consensus_over).replace('%', '').strip()
-            under_str = str(consensus_under).replace('%', '').strip()
+            # Inicializar porcentajes
+            perc_over = 0
+            perc_under = 0
             
-            over_match = re.search(r'(\d+)', over_str)
-            under_match = re.search(r'(\d+)', under_str)
+            # Parsear consensus_over
+            over_str = str(consensus_over)
+            over_match = re.search(r'(\d+)\s*%', over_str)
+            if over_match:
+                porcentaje = float(over_match.group(1))
+                # Verificar si el texto contiene "Over" o "Under"
+                if 'Over' in over_str:
+                    perc_over = porcentaje
+                elif 'Under' in over_str:
+                    perc_under = porcentaje
             
-            if over_match and under_match:
-                perc_over = float(over_match.group(1))
-                perc_under = float(under_match.group(1))
-                
-                # Verificar si cumple consenso mínimo
-                mejor_opcion = None
-                mejor_porcentaje = 0
-                
-                if perc_over >= consensus_minimo:
-                    mejor_opcion = 'over'
-                    mejor_porcentaje = perc_over
-                elif perc_under >= consensus_minimo:
-                    mejor_opcion = 'under'
-                    mejor_porcentaje = perc_under
-                
-                if mejor_opcion:
+            # Parsear consensus_under
+            under_str = str(consensus_under)
+            under_match = re.search(r'(\d+)\s*%', under_str)
+            if under_match:
+                porcentaje = float(under_match.group(1))
+                # Verificar si el texto contiene "Over" o "Under"
+                if 'Over' in under_str:
+                    perc_over = porcentaje
+                elif 'Under' in under_str:
+                    perc_under = porcentaje
+            
+            print(f"DEBUG: {sigla_1} vs {sigla_2} - OVER: {perc_over}%, UNDER: {perc_under}%")
+            
+            # Verificar si cumple consenso mínimo
+            mejor_opcion = None
+            mejor_porcentaje = 0
+            
+            if perc_over >= consensus_minimo:
+                mejor_opcion = 'over'
+                mejor_porcentaje = perc_over
+            elif perc_under >= consensus_minimo:
+                mejor_opcion = 'under'
+                mejor_porcentaje = perc_under
+            
+            if mejor_opcion:
                     # Buscar resultado
                     key = f"{fecha}_{sigla_1}_{sigla_2}"
                     key_inv = f"{fecha}_{sigla_2}_{sigla_1}"
@@ -333,7 +453,7 @@ def simular_bankroll(apuestas_validas, bankroll_inicial, monto_apuesta, max_apue
         # Realizar apuesta
         bankroll -= monto_apuesta
         
-        if apuesta['gano']:
+        if apuesta['ganadora']:
             # Cuota europea: si apuestas $100 con cuota 1.8, recibes $180
             ganancia = monto_apuesta * apuesta['cuota']
             bankroll += ganancia
@@ -348,7 +468,7 @@ def simular_bankroll(apuestas_validas, bankroll_inicial, monto_apuesta, max_apue
             'equipos': apuesta['equipos'],
             'prediccion': apuesta['prediccion'],
             'porcentaje': apuesta['porcentaje'],
-            'gano': apuesta['gano'],
+            'gano': apuesta['ganadora'],
             'beneficio': beneficio,
             'bankroll': bankroll,
             'cuota': apuesta['cuota']

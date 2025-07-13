@@ -1,8 +1,33 @@
-# 🖥️ Guía de Uso para Windows
+# 🖥️ Guía Completa para Windows - Predicciones Deportivas
 
-Esta guía proporciona instrucciones específicas para Windows (PowerShell y cmd) evitando problemas de compatibilidad.
+Esta guía te ayudará a configurar y usar el proyecto de predicciones deportivas en Windows con PowerShell.
 
-## 🚀 Inicio Rápido - Configuración Automática
+## 🚀 Configuración Automática (Recomendado)
+
+### Opción 1: Script de Configuración Automática
+```powershell
+# Navegar al directorio del proyecto
+cd "C:\Users\JVILLA\Desktop\predicciones_deportivas"
+
+# Ejecutar configuración automática
+.\setup_powershell.ps1
+```
+
+### Opción 2: Comandos Integrados
+```powershell
+# Ver todos los comandos disponibles
+.\comandos_powershell.ps1 -Comando ayuda
+
+# Verificar estado del proyecto
+.\comandos_powershell.ps1 -Comando estado
+
+# Ejecutar pruebas básicas
+.\comandos_powershell.ps1 -Comando test
+```
+
+## 📋 Configuración Manual
+
+Si prefieres configurar manualmente o si los scripts automáticos no funcionan:
 
 ### 1. Preparación del Entorno
 ```powershell
@@ -40,8 +65,6 @@ $env:SUPABASE_ANON_KEY="tu_clave_anonima"
 python setup_completo.py configurar_demo
 # Luego edita .env con tus credenciales
 ```
-
-## 📋 Comandos de Verificación (Windows)
 
 ## 📋 Comandos de Verificación (Windows)
 
@@ -368,6 +391,41 @@ python test_matching_29.py
 3. **Validar pipeline completo** - Una vez corregido el consensus
 
 ---
+
+## 🔧 Scripts de PowerShell (Nuevos)
+
+### Configuración Automática
+```powershell
+# Configurar todo el proyecto automáticamente
+.\setup_powershell.ps1
+```
+
+### Comandos Integrados
+```powershell
+# Ver todos los comandos disponibles
+.\comandos_powershell.ps1 -Comando ayuda
+
+# Verificar estado del proyecto
+.\comandos_powershell.ps1 -Comando estado
+
+# Ejecutar pruebas
+.\comandos_powershell.ps1 -Comando test
+
+# Verificar tablas de Supabase
+.\comandos_powershell.ps1 -Comando tablas
+
+# Ejecutar scraping completo
+.\comandos_powershell.ps1 -Comando scraping
+
+# Recopilar datos históricos
+.\comandos_powershell.ps1 -Comando historicos
+
+# Analizar efectividad
+.\comandos_powershell.ps1 -Comando efectividad
+
+# Abrir dashboard
+.\comandos_powershell.ps1 -Comando dashboard
+```
 
 ## 📋 Resumen de Comandos Principales (Windows)
 

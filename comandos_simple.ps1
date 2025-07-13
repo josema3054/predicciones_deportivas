@@ -16,6 +16,8 @@ function Show-Help {
     Write-Host "SCRAPING:" -ForegroundColor Blue
     Write-Host "  consensus      - Obtener consensus de hoy" -ForegroundColor Cyan
     Write-Host "  resultados     - Obtener resultados recientes" -ForegroundColor Cyan
+    Write-Host "  recopilar      - Recopilar SOLO totals + resultados (optimizado)" -ForegroundColor Cyan
+    Write-Host "  limpiar        - Vaciar base de datos" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "ANALISIS:" -ForegroundColor Blue
     Write-Host "  historicos     - Recopilar datos historicos" -ForegroundColor Cyan
@@ -59,14 +61,24 @@ switch ($Comando.ToLower()) {
         Write-Host "📊 Analizando efectividad..." -ForegroundColor Blue
         python analytics/mlb/analizador_efectividad.py
     }
+    "recopilar" {
+        Write-Host "🎯 Recopilando SOLO totals + resultados..." -ForegroundColor Blue
+        Write-Host "⚠️  Versión optimizada para simulador" -ForegroundColor Yellow
+        python recopilador_totals_only.py
+    }
+    "limpiar" {
+        Write-Host "🧹 Limpiando base de datos..." -ForegroundColor Blue
+        Write-Host "⚠️  PRECAUCIÓN: Eliminará todos los datos" -ForegroundColor Red
+        python limpiar_bd.py
+    }
     "simulador" {
-        Write-Host "� Iniciando simulador de apuestas..." -ForegroundColor Blue
+        Write-Host "🎰 Iniciando simulador de apuestas..." -ForegroundColor Blue
         Write-Host "📊 Accede a: http://localhost:5001" -ForegroundColor Green
         Start-Process "http://localhost:5001"
         python simulador_apuestas.py
     }
     "sim" {
-        Write-Host "� Iniciando simulador de apuestas..." -ForegroundColor Blue
+        Write-Host "🎰 Iniciando simulador de apuestas..." -ForegroundColor Blue
         Write-Host "📊 Accede a: http://localhost:5001" -ForegroundColor Green
         Start-Process "http://localhost:5001"
         python simulador_apuestas.py
